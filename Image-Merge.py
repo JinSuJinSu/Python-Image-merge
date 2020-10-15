@@ -26,7 +26,7 @@ def add_file():
 def del_file():
     for index in reversed(list_file.curselection()):
         list_file.delete(index)
-
+        g
 
 #저장 경로(폴더)
 def browse_save_path():
@@ -79,20 +79,27 @@ def merge_image():
 
     max_width, total_height = max(widths), sum(heights)
 
+    if img_space >0: #이미지 간격 옵션 적용
+        total_height += (img_space* (len(imgaes) -1))
+
     #스케치북 준비 
     result_img = Image.new('RGB', (max_width, total_height),(255,255,255))
     y_offset = 0 # y 위치정보
 
     for idx, img in enumerate(images):
+        #width가 원본이 아닐 때에는 이미지 크기를 조정해야 한다.
+        if img_width >-1:
+            img = img.resize(image_sizes[idx])
         result_img.paste(img,(0,y_offset))
-        y_offset += img.size[1] #height만큼 더해주는 것이다.
+        y_offset += img.size[1] + img_space  #height 값 + 사용자가 지정한 간격
 
         progress = (idx +1) / len(images) * 100 #실제 percent 정보를 계산
         p_var.set(progress)
         progress_bar.update()
     
-
-    output_path = os.path.join(save_path.get(), 'merged-images.jpg')
+    # 포맷 옵션 처리
+    file_name = 'result_photo' + img_format
+    output_path = os.path.join(save_path.get(), file_name)
     result_img.save(output_path)
     msgbox.showinfo('알림','작업이 완료되었습니다.')
 
