@@ -36,7 +36,7 @@ def browse_save_path():
     save_path.delete(0,END)
     save_path.insert(0, folder_selected)
 
-    #이미지 통합
+    #이미지 통합 함수
 def merge_image():
 
     #가로 넓이
