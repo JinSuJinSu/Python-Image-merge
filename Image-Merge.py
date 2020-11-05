@@ -28,7 +28,7 @@ def del_file():
     for index in reversed(list_file.curselection()):
         list_file.delete(index)
 
-#저장 경로(폴더)
+#저장 경로 함수
 def browse_save_path():
     folder_selected = filedialog.askdirectory()
     if folder_selected is None:#사용자가 취소를 누를 때
@@ -155,20 +155,25 @@ cmb_format= ttk.Combobox(option_frame, state= 'readonly',values = opt_format, wi
 cmb_format.current(0)
 cmb_format.pack(side = 'left')
 
-#진행 상황 progressbar
+# 진행상황 레이블 프레임을 만든다.
 progress_frame = LabelFrame(root, text = '진행상황')
 progress_frame.pack(fill='x', padx = 5, pady = 5, ipady = 5)
 
+# 진행상황 프로그래스바
 p_var = DoubleVar()
 progress_bar = ttk.Progressbar(progress_frame, maximum = 100, variable =p_var)
 progress_bar.pack(fill='x', padx = 5, pady = 5)
 
-#실행 프레임
+#실행 프레임 만들기
 run_frame = Frame(root)
 run_frame.pack(fill='x', padx = 5, pady = 5)
 
+#닫기 버튼
 btn_close_file = Button(run_frame, padx = 5, pady = 5, width = 12, text = '닫기', command = root.quit)
 btn_close_file.pack(side = 'right')
+
+
+#시작 버튼
 btn_start = Button(run_frame, padx = 5, pady = 5, width = 12, text ='시작', command = start)
 btn_start.pack(side = 'right')
 
