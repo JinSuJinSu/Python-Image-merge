@@ -5,7 +5,6 @@ from tkinter import*
 from tkinter import filedialog
 from PIL import Image
 
-
 root = Tk()
 root.title("Image Merge")
 
@@ -16,12 +15,11 @@ file_frame.pack(fill='x', padx = 5, pady = 5)
 
 #파일 추가 함수
 def add_file():
-    files = filedialog.askopenfilenames(title = '이미지 파일을 선택하세요',filetypes=(('PNG 파일','*.png'),('모든파일','*.*')), initialdir=r"C:\Users\lemon\Desktop\Visual Studio\Phython\panggame\images") #최초에 C:/ 경로를 보여준다.
+    files = filedialog.askopenfilenames(title = '이미지를 선택하세요', filetypes=(('PNG 파일','*.png'),('모든파일','*.*')), initialdir=r"C:\Users\lemon\Desktop\Visual Studio\Phython\panggame\images") #최초에 C:/ 경로를 보여준다.
 
     # 사용자가 선택한 파일 목록
     for file in files:
-        list_file.insert(END, file)
-
+        list_file.insert(END,file)
 
 #선택 삭제 함수
 def del_file():
@@ -31,51 +29,90 @@ def del_file():
 #저장 경로 함수
 def browse_save_path():
     folder_selected = filedialog.askdirectory()
-    if folder_selected is None:#사용자가 취소를 누를 때
+    if folder_selected is None:
         return
     save_path.delete(0,END)
-    save_path.insert(0, folder_selected)
+    save_path.insert(0,folder_selected)
 
-    #이미지 통합
+#이미지 통합 함수
 def merge_image():
-    #print(list_file.get(0,END)) # 모든 파일 목록을 가져오기
-    images = [Image.open(x) for x in list_file.get(0, END)]
-    widths = [x.size[0] for x in images]
-    heights = [x.size[1] for x in images]
+    #가로 넓이
+    img_width = cmb_width.get()
+    if img_width == '원본유지':
+        img_width = -1 #-1일 때는 원본 기준으로 한다.
+    else:
+        img_width = int(img_width)
+
+    # 간격
+    img_space = cmb_space.get()
+    if img_space == '좁게':
+        img_space = 30
+    elif img_space == '보통':
+        img_space = 60
+    elif img_space == '넓게':
+        img_space = 90
+    else:# 없음
+        img_space = 0
+
+    #포맷
+    img_format = cmb_format.get().lower() # PNG, JPG, BMP 값을 받아와서 소문자로 변경
+
+    images = [Image.open(x) for x in list_file.get(0,END)]
+
+    # 이미지 사이즈 리스트에 넣어서 하나씩 처리
+    image_sizes = [] # [(width1, height1), (width2, height2), ...]
+
+    if img_width >-1:
+        #width변경
+        image_sizes = [(int(img_width), int(img_width * x.size[1] / x.size[0])) for x in images]
+    else:
+        #원본 사이즈 사용
+        image_sizes = [(x.size[0], x.size[1]) for x in images]
+
+    widths, heights = zip(*(image_sizes))
 
     max_width, total_height = max(widths), sum(heights)
 
-    #스케치북 준비 
-    result_img = Image.new('RGB', (max_width, total_height),(255,255,255))
-    y_offset = 0 # y 위치정보
+    if img_space >0:#이미지 간격 옵션 적용
+        total_height += (img_space* (len(images) -1))
 
+
+    #스케치북 준비 
+    result_img = Image.new('RGB',(max_width,total_height),(255,255,255))
+    y_offset = 0 # y 위치 정보
+
+    #이미지 붙여넣기
     for idx, img in enumerate(images):
+        #width가 원본이 아닐 때에는 이미지 크기를 조정해야 한다.
+        if img_width >-1:
+            img = img.resize(image_sizes[idx])
         result_img.paste(img,(0,y_offset))
-        y_offset += img.size[1] #height만큼 더해주는 것이다.
+        y_offset += (img.size[1] + img_space)  #height 값 + 사용자가 지정한 간격
 
         progress = (idx +1) / len(images) * 100 #실제 percent 정보를 계산
         p_var.set(progress)
         progress_bar.update()
-    
 
-    dest_path = os.path.join(save_path.get(), 'nado_photo.jpg')
-    result_img.save(dest_path)
+    # 포맷 옵션 처리
+    file_name = 'result_photo.' + img_format
+    output_path = os.path.join(save_path.get(), file_name)
+    result_img.save(output_path)
     msgbox.showinfo('알림','작업이 완료되었습니다.')
 
 
-# 시작
+#시작 함수
 def start():
 
-    # 파일 목록 확인
+    #파일 목록 확인
     if list_file.size() == 0:
         msgbox.showwarning('경고', '이미지 파일을 추가하세요')
         return
-    # 저장 경로 확인
-    if len(save_path.get()) == 0:
+
+    #저장 경로 확인
+    if len(save_path.get()) ==0:
         msgbox.showwarning('경고', '저장 경로를 선택하세요')
         return
-
-    # 이미지 통합 작업
+    
     merge_image()
 
 
